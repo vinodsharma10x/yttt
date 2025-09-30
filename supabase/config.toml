@@ -1,0 +1,4 @@
+project_id = "efvpvpcabfrpoattumcx"
+
+[functions.generate-titles]
+verify_jwt = false

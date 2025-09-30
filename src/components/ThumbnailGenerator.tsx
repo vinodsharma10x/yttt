@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Upload, Download, Type, Image as ImageIcon } from "lucide-react";
+import { Upload, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TitleGenerator } from "@/components/TitleGenerator";
 import { toast } from "sonner";
 
 export const ThumbnailGenerator = () => {
@@ -122,21 +124,36 @@ export const ThumbnailGenerator = () => {
     drawThumbnail();
   }, [image, title, description, titleSize, descriptionSize]);
 
+  const handleSelectTitle = (selectedTitle: string) => {
+    setTitle(selectedTitle);
+  };
+
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-6xl font-black mb-4 bg-gradient-primary bg-clip-text text-transparent">
-            YouTube Thumbnail Generator
+            YouTube Thumbnail & Title Generator
           </h1>
           <p className="text-xl text-muted-foreground">
-            Create eye-catching thumbnails in seconds
+            Create AI-powered titles and eye-catching thumbnails in seconds
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Controls Panel */}
-          <Card className="p-6 space-y-6 bg-gradient-card border-border shadow-elevation">
+          <Card className="p-6 bg-gradient-card border-border shadow-elevation">
+            <Tabs defaultValue="title" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="title">AI Title Generator</TabsTrigger>
+                <TabsTrigger value="thumbnail">Thumbnail Design</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="title" className="space-y-6">
+                <TitleGenerator onSelectTitle={handleSelectTitle} />
+              </TabsContent>
+
+              <TabsContent value="thumbnail" className="space-y-6">
             <div>
               <Label htmlFor="image-upload" className="text-lg font-bold mb-3 block">
                 Background Image
@@ -213,13 +230,15 @@ export const ThumbnailGenerator = () => {
               </div>
             </div>
 
-            <Button
-              onClick={downloadThumbnail}
-              className="w-full h-14 text-lg font-bold bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
-            >
-              <Download className="w-5 h-5 mr-2" />
-              Download Thumbnail
-            </Button>
+                <Button
+                  onClick={downloadThumbnail}
+                  className="w-full h-14 text-lg font-bold bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
+                >
+                  <Download className="w-5 h-5 mr-2" />
+                  Download Thumbnail
+                </Button>
+              </TabsContent>
+            </Tabs>
           </Card>
 
           {/* Preview Panel */}
