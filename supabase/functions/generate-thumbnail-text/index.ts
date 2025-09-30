@@ -23,14 +23,20 @@ serve(async (req) => {
 
     const systemPrompt = `You are a YouTube thumbnail text optimization expert. Generate SHORT, POWERFUL text for thumbnail overlays.
 
-CRITICAL RULES:
+CRITICAL RULES FOR MAIN TEXT:
 - Keep text between 1-8 WORDS MAXIMUM (shorter is better)
 - Use ALL CAPS for maximum impact
 - Focus on emotional triggers and power words
 - Text must be readable on mobile (large, bold text works best)
 - Create curiosity or promise a benefit
 - Use numbers when impactful (e.g., "3 SECRETS", "5 MIN")
-- Think visual impact, NOT SEO
+
+CRITICAL RULES FOR SUBTITLE:
+- Keep subtitle between 2-6 words
+- Complements the main text
+- Can be title case or ALL CAPS
+- Adds context or urgency
+- Optional - can be empty if main text is self-sufficient
 
 POWER WORDS TO USE:
 - ULTIMATE, SECRET, SHOCKING, EASY, PROVEN, INSTANT
@@ -39,27 +45,29 @@ POWER WORDS TO USE:
 
 Your response MUST be valid JSON in this exact format:
 {
-  "thumbnailTexts": [
+  "thumbnailOptions": [
     {
-      "text": "THE ACTUAL SHORT TEXT",
-      "reason": "Why this text works visually"
+      "mainText": "THE MAIN TEXT",
+      "subtitle": "The Subtitle Text",
+      "reason": "Why this combination works visually"
     }
   ]
 }
 
-Generate 3-4 thumbnail text variations optimized for visual impact.`;
+Generate 3-4 thumbnail text + subtitle combinations optimized for visual impact.`;
 
     const userPrompt = `Video Description: ${videoDescription}
 
 Selected Video Title: ${selectedTitle}
 Emotion: ${emotion}
 
-Generate 3-4 SHORT thumbnail text options (1-8 words max) that:
-1. Create visual impact and curiosity
-2. Match the ${emotion} emotion
-3. Are readable at small sizes on mobile
-4. Complement but DON'T repeat the video title
-5. Use power words and emotional triggers
+Generate 3-4 thumbnail text + subtitle combinations that:
+1. Main text: 1-8 words, creates visual impact and curiosity
+2. Subtitle: 2-6 words, adds context or urgency (can be empty if not needed)
+3. Match the ${emotion} emotion
+4. Are readable at small sizes on mobile
+5. Complement but DON'T repeat the video title
+6. Use power words and emotional triggers
 
 Return ONLY valid JSON with the format specified.`;
 

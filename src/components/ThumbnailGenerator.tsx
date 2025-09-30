@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ThumbnailTextOption {
-  text: string;
+  mainText: string;
+  subtitle: string;
   reason: string;
 }
 
@@ -85,32 +86,88 @@ export const ThumbnailGenerator = () => {
 
     // Add semi-transparent overlay for better text readability
     if (title || description) {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+      ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // Draw title
+    // Draw title with background
     if (title) {
       ctx.font = `bold ${titleSize}px Arial, sans-serif`;
-      ctx.fillStyle = "#FFFFFF";
-      ctx.strokeStyle = "#000000";
-      ctx.lineWidth = 4;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
 
       const titleY = canvas.height / 2 - 50;
+      const textMetrics = ctx.measureText(title);
+      const textWidth = textMetrics.width;
+      const textHeight = titleSize;
+      
+      // Draw background rectangle with rounded corners
+      const padding = 30;
+      const rectX = canvas.width / 2 - textWidth / 2 - padding;
+      const rectY = titleY - textHeight / 2 - padding / 2;
+      const rectWidth = textWidth + padding * 2;
+      const rectHeight = textHeight + padding;
+      const borderRadius = 15;
+
+      ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+      ctx.beginPath();
+      ctx.moveTo(rectX + borderRadius, rectY);
+      ctx.lineTo(rectX + rectWidth - borderRadius, rectY);
+      ctx.quadraticCurveTo(rectX + rectWidth, rectY, rectX + rectWidth, rectY + borderRadius);
+      ctx.lineTo(rectX + rectWidth, rectY + rectHeight - borderRadius);
+      ctx.quadraticCurveTo(rectX + rectWidth, rectY + rectHeight, rectX + rectWidth - borderRadius, rectY + rectHeight);
+      ctx.lineTo(rectX + borderRadius, rectY + rectHeight);
+      ctx.quadraticCurveTo(rectX, rectY + rectHeight, rectX, rectY + rectHeight - borderRadius);
+      ctx.lineTo(rectX, rectY + borderRadius);
+      ctx.quadraticCurveTo(rectX, rectY, rectX + borderRadius, rectY);
+      ctx.closePath();
+      ctx.fill();
+
+      // Draw title text
+      ctx.fillStyle = "#FFFFFF";
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 4;
       ctx.strokeText(title, canvas.width / 2, titleY);
       ctx.fillText(title, canvas.width / 2, titleY);
     }
 
-    // Draw description
+    // Draw subtitle with background
     if (description) {
       ctx.font = `${descriptionSize}px Arial, sans-serif`;
-      ctx.fillStyle = "#FFFF00";
-      ctx.strokeStyle = "#000000";
-      ctx.lineWidth = 3;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
 
       const descY = canvas.height / 2 + 50;
+      const textMetrics = ctx.measureText(description);
+      const textWidth = textMetrics.width;
+      const textHeight = descriptionSize;
+      
+      // Draw background rectangle with rounded corners
+      const padding = 20;
+      const rectX = canvas.width / 2 - textWidth / 2 - padding;
+      const rectY = descY - textHeight / 2 - padding / 2;
+      const rectWidth = textWidth + padding * 2;
+      const rectHeight = textHeight + padding;
+      const borderRadius = 10;
+
+      ctx.fillStyle = "rgba(255, 193, 7, 0.9)";
+      ctx.beginPath();
+      ctx.moveTo(rectX + borderRadius, rectY);
+      ctx.lineTo(rectX + rectWidth - borderRadius, rectY);
+      ctx.quadraticCurveTo(rectX + rectWidth, rectY, rectX + rectWidth, rectY + borderRadius);
+      ctx.lineTo(rectX + rectWidth, rectY + rectHeight - borderRadius);
+      ctx.quadraticCurveTo(rectX + rectWidth, rectY + rectHeight, rectX + rectWidth - borderRadius, rectY + rectHeight);
+      ctx.lineTo(rectX + borderRadius, rectY + rectHeight);
+      ctx.quadraticCurveTo(rectX, rectY + rectHeight, rectX, rectY + rectHeight - borderRadius);
+      ctx.lineTo(rectX, rectY + borderRadius);
+      ctx.quadraticCurveTo(rectX, rectY, rectX + borderRadius, rectY);
+      ctx.closePath();
+      ctx.fill();
+
+      // Draw subtitle text
+      ctx.fillStyle = "#000000";
+      ctx.strokeStyle = "#FFFFFF";
+      ctx.lineWidth = 2;
       ctx.strokeText(description, canvas.width / 2, descY);
       ctx.fillText(description, canvas.width / 2, descY);
     }
@@ -165,7 +222,7 @@ export const ThumbnailGenerator = () => {
         return;
       }
 
-      setGeneratedThumbnailTexts(data.thumbnailTexts || []);
+      setGeneratedThumbnailTexts(data.thumbnailOptions || []);
       toast.success("Thumbnail text generated!");
     } catch (error) {
       console.error('Error generating thumbnail text:', error);
@@ -175,8 +232,9 @@ export const ThumbnailGenerator = () => {
     }
   };
 
-  const handleSelectThumbnailText = (text: string) => {
-    setTitle(text);
+  const handleSelectThumbnailText = (mainText: string, subtitle: string) => {
+    setTitle(mainText);
+    setDescription(subtitle);
     toast.success("Thumbnail text applied!");
   };
 
@@ -231,10 +289,13 @@ export const ThumbnailGenerator = () => {
                         <Card
                           key={index}
                           className="p-4 cursor-pointer hover:border-primary transition-colors"
-                          onClick={() => handleSelectThumbnailText(option.text)}
+                          onClick={() => handleSelectThumbnailText(option.mainText, option.subtitle)}
                         >
                           <div className="space-y-2">
-                            <p className="font-bold text-lg">{option.text}</p>
+                            <p className="font-bold text-lg">{option.mainText}</p>
+                            {option.subtitle && (
+                              <p className="font-semibold text-base text-yellow-600">{option.subtitle}</p>
+                            )}
                             <p className="text-sm text-muted-foreground">{option.reason}</p>
                           </div>
                         </Card>
@@ -277,7 +338,7 @@ export const ThumbnailGenerator = () => {
 
             <div>
               <Label htmlFor="title" className="text-lg font-bold mb-3 block">
-                Title
+                Main Text
               </Label>
               <Input
                 id="title"
@@ -301,7 +362,7 @@ export const ThumbnailGenerator = () => {
 
             <div>
               <Label htmlFor="description" className="text-lg font-bold mb-3 block">
-                Description
+                Subtitle
               </Label>
               <Input
                 id="description"
@@ -312,7 +373,7 @@ export const ThumbnailGenerator = () => {
               />
               <div className="mt-3">
                 <Label className="text-sm text-muted-foreground">
-                  Description Size: {descriptionSize}px
+                  Subtitle Size: {descriptionSize}px
                 </Label>
                 <Slider
                   value={[descriptionSize]}
