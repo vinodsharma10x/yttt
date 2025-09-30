@@ -15,7 +15,7 @@ interface TitleOption {
 }
 
 interface TitleGeneratorProps {
-  onSelectTitle: (title: string) => void;
+  onSelectTitle: (data: { title: string; videoDescription: string; emotion: string }) => void;
 }
 
 export const TitleGenerator = ({ onSelectTitle }: TitleGeneratorProps) => {
@@ -68,8 +68,8 @@ export const TitleGenerator = ({ onSelectTitle }: TitleGeneratorProps) => {
   };
 
   const handleSelectTitle = (title: string) => {
-    onSelectTitle(title);
-    toast.success("Title applied to thumbnail!");
+    onSelectTitle({ title, videoDescription, emotion });
+    toast.success("Title selected!");
   };
 
   return (

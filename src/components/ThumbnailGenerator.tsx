@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Upload, Download } from "lucide-react";
+import { Upload, Download, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,12 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TitleGenerator } from "@/components/TitleGenerator";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+interface ThumbnailTextOption {
+  text: string;
+  reason: string;
+}
 
 export const ThumbnailGenerator = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -17,6 +23,13 @@ export const ThumbnailGenerator = () => {
   const [descriptionSize, setDescriptionSize] = useState(36);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // State for thumbnail text generation
+  const [videoDescription, setVideoDescription] = useState("");
+  const [selectedTitle, setSelectedTitle] = useState("");
+  const [emotion, setEmotion] = useState("");
+  const [generatedThumbnailTexts, setGeneratedThumbnailTexts] = useState<ThumbnailTextOption[]>([]);
+  const [isGeneratingText, setIsGeneratingText] = useState(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -124,8 +137,47 @@ export const ThumbnailGenerator = () => {
     drawThumbnail();
   }, [image, title, description, titleSize, descriptionSize]);
 
-  const handleSelectTitle = (selectedTitle: string) => {
-    setTitle(selectedTitle);
+  const handleTitleGenerated = (titleData: { title: string; videoDescription: string; emotion: string }) => {
+    setSelectedTitle(titleData.title);
+    setVideoDescription(titleData.videoDescription);
+    setEmotion(titleData.emotion);
+    toast.success("Title selected! Switch to Thumbnail Design to generate text.");
+  };
+
+  const generateThumbnailText = async () => {
+    if (!videoDescription || !selectedTitle || !emotion) {
+      toast.error("Please generate and select a title first");
+      return;
+    }
+
+    setIsGeneratingText(true);
+    setGeneratedThumbnailTexts([]);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-thumbnail-text', {
+        body: { videoDescription, selectedTitle, emotion }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        toast.error(data.error);
+        return;
+      }
+
+      setGeneratedThumbnailTexts(data.thumbnailTexts || []);
+      toast.success("Thumbnail text generated!");
+    } catch (error) {
+      console.error('Error generating thumbnail text:', error);
+      toast.error("Failed to generate thumbnail text");
+    } finally {
+      setIsGeneratingText(false);
+    }
+  };
+
+  const handleSelectThumbnailText = (text: string) => {
+    setTitle(text);
+    toast.success("Thumbnail text applied!");
   };
 
   return (
@@ -150,10 +202,53 @@ export const ThumbnailGenerator = () => {
               </TabsList>
 
               <TabsContent value="title" className="space-y-6">
-                <TitleGenerator onSelectTitle={handleSelectTitle} />
+                <TitleGenerator onSelectTitle={handleTitleGenerated} />
               </TabsContent>
 
               <TabsContent value="thumbnail" className="space-y-6">
+                {/* AI Thumbnail Text Generator */}
+                <div className="space-y-4 pb-6 border-b border-border">
+                  <div>
+                    <Label className="text-lg font-bold mb-2 block">AI Thumbnail Text</Label>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Generate short, powerful text for your thumbnail overlay
+                    </p>
+                    <Button
+                      onClick={generateThumbnailText}
+                      disabled={isGeneratingText || !selectedTitle}
+                      className="w-full"
+                      variant="outline"
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      {isGeneratingText ? "Generating..." : "Generate Thumbnail Text"}
+                    </Button>
+                  </div>
+
+                  {generatedThumbnailTexts.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">Select Thumbnail Text:</Label>
+                      {generatedThumbnailTexts.map((option, index) => (
+                        <Card
+                          key={index}
+                          className="p-4 cursor-pointer hover:border-primary transition-colors"
+                          onClick={() => handleSelectThumbnailText(option.text)}
+                        >
+                          <div className="space-y-2">
+                            <p className="font-bold text-lg">{option.text}</p>
+                            <p className="text-sm text-muted-foreground">{option.reason}</p>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+
+                  {!selectedTitle && (
+                    <p className="text-sm text-muted-foreground italic">
+                      Generate a title first to unlock AI thumbnail text
+                    </p>
+                  )}
+                </div>
+
             <div>
               <Label htmlFor="image-upload" className="text-lg font-bold mb-3 block">
                 Background Image
