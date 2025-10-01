@@ -79,9 +79,10 @@ serve(async (req) => {
         .eq('id', connection.id);
     }
 
-    // Fetch recent videos
+    // Fetch recent videos (increased to 20)
+    console.log('Fetching recent videos for channel:', connection.channel_id);
     const videosResponse = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${connection.channel_id}&maxResults=10&order=date&type=video`,
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${connection.channel_id}&maxResults=20&order=date&type=video`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
 
@@ -126,6 +127,7 @@ serve(async (req) => {
     }
 
     // Store/update videos
+    console.log(`Processing ${statsData.items.length} videos...`);
     for (const video of statsData.items) {
       const videoData = {
         user_id: user.id,
@@ -141,9 +143,13 @@ serve(async (req) => {
         tags: video.snippet.tags || [],
       };
 
-      await supabaseClient
+      const { error: upsertError } = await supabaseClient
         .from('youtube_videos')
         .upsert(videoData, { onConflict: 'video_id' });
+      
+      if (upsertError) {
+        console.error('Error upserting video:', video.id, upsertError);
+      }
     }
 
     console.log(`Successfully synced ${statsData.items.length} videos`);

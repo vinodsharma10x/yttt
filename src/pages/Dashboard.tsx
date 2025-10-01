@@ -10,6 +10,7 @@ import { ChannelOverview } from "@/components/profile/ChannelOverview";
 import { AudienceProfiles } from "@/components/profile/AudienceProfiles";
 import { ChannelSettings } from "@/components/profile/ChannelSettings";
 import { AnalyticsDashboard } from "@/components/dashboard/AnalyticsDashboard";
+import { YouTubeConnection } from "@/components/profile/YouTubeConnection";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -84,6 +85,10 @@ const Dashboard = () => {
             </CardDescription>
           </CardHeader>
         </Card>
+
+        <div className="mb-8">
+          <YouTubeConnection userId={user?.id} />
+        </div>
 
         <Tabs defaultValue="analytics" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">

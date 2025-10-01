@@ -7,8 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { YouTubeConnection } from "./YouTubeConnection";
-
 interface ChannelOverviewProps {
   userId: string;
 }
@@ -16,6 +14,7 @@ interface ChannelOverviewProps {
 export const ChannelOverview = ({ userId }: ChannelOverviewProps) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [youtubeData, setYoutubeData] = useState<any>(null);
   const [profile, setProfile] = useState({
     channel_name: "",
     channel_niche: "",
@@ -30,6 +29,7 @@ export const ChannelOverview = ({ userId }: ChannelOverviewProps) => {
 
   const loadProfile = async () => {
     try {
+      // Load profile data
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -46,6 +46,17 @@ export const ChannelOverview = ({ userId }: ChannelOverviewProps) => {
           content_pillars: data.content_pillars || [],
           brand_voice: data.brand_voice || "",
         });
+      }
+
+      // Load YouTube connection data
+      const { data: ytData, error: ytError } = await supabase
+        .from("youtube_connections")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (ytData) {
+        setYoutubeData(ytData);
       }
     } catch (error: any) {
       toast.error("Failed to load profile");
@@ -90,7 +101,44 @@ export const ChannelOverview = ({ userId }: ChannelOverviewProps) => {
 
   return (
     <div className="space-y-6">
-      <YouTubeConnection userId={userId} />
+      {youtubeData && (
+        <Card>
+          <CardHeader>
+            <CardTitle>YouTube Channel Statistics</CardTitle>
+            <CardDescription>
+              Real-time data from your connected YouTube channel
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center p-4 bg-accent/10 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-2">Channel Name</p>
+                <p className="text-2xl font-bold">{youtubeData.channel_title}</p>
+              </div>
+              <div className="text-center p-4 bg-accent/10 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-2">Subscribers</p>
+                <p className="text-2xl font-bold">{youtubeData.subscriber_count?.toLocaleString() || 0}</p>
+              </div>
+              <div className="text-center p-4 bg-accent/10 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-2">Total Videos</p>
+                <p className="text-2xl font-bold">{youtubeData.video_count?.toLocaleString() || 0}</p>
+              </div>
+              <div className="text-center p-4 bg-accent/10 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-2">Total Views</p>
+                <p className="text-2xl font-bold">{youtubeData.view_count?.toLocaleString() || 0}</p>
+              </div>
+              <div className="text-center p-4 bg-accent/10 rounded-lg col-span-1 md:col-span-2">
+                <p className="text-sm text-muted-foreground mb-2">Last Synced</p>
+                <p className="text-lg font-semibold">
+                  {youtubeData.last_synced_at 
+                    ? new Date(youtubeData.last_synced_at).toLocaleString()
+                    : 'Never'}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       
       <Card>
         <CardHeader>

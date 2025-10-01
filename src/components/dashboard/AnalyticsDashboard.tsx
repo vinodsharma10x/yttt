@@ -18,6 +18,27 @@ export const AnalyticsDashboard = ({ userId }: AnalyticsDashboardProps) => {
 
   useEffect(() => {
     loadDashboardData();
+    
+    // Set up realtime subscription for video updates
+    const channel = supabase
+      .channel('youtube_videos_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'youtube_videos',
+          filter: `user_id=eq.${userId}`
+        },
+        () => {
+          loadDashboardData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [userId]);
 
   const loadDashboardData = async () => {
