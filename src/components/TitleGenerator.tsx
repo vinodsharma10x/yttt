@@ -15,13 +15,14 @@ interface TitleOption {
 }
 
 interface TitleGeneratorProps {
-  onSelectTitle: (data: { title: string; videoDescription: string; emotion: string }) => void;
+  onSelectTitle: (data: { title: string; videoDescription: string; emotion: string; icp: string }) => void;
 }
 
 export const TitleGenerator = ({ onSelectTitle }: TitleGeneratorProps) => {
   const [videoDescription, setVideoDescription] = useState("");
   const [targetKeyword, setTargetKeyword] = useState("");
   const [emotion, setEmotion] = useState("excited");
+  const [icp, setIcp] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedTitles, setGeneratedTitles] = useState<TitleOption[]>([]);
 
@@ -47,6 +48,7 @@ export const TitleGenerator = ({ onSelectTitle }: TitleGeneratorProps) => {
             videoDescription,
             targetKeyword: targetKeyword || "video",
             emotion,
+            icp: icp || "",
           }),
         }
       );
@@ -68,7 +70,7 @@ export const TitleGenerator = ({ onSelectTitle }: TitleGeneratorProps) => {
   };
 
   const handleSelectTitle = (title: string) => {
-    onSelectTitle({ title, videoDescription, emotion });
+    onSelectTitle({ title, videoDescription, emotion, icp });
     toast.success("Title selected!");
   };
 
@@ -85,6 +87,19 @@ export const TitleGenerator = ({ onSelectTitle }: TitleGeneratorProps) => {
             value={videoDescription}
             onChange={(e) => setVideoDescription(e.target.value)}
             className="mt-2 min-h-[100px] resize-none"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="icp" className="text-base font-semibold">
+            Ideal Customer Profile (ICP)
+          </Label>
+          <Textarea
+            id="icp"
+            placeholder="Describe your target audience (e.g., 'Tech-savvy millennials interested in home cooking, ages 25-35, looking for quick and easy recipes')"
+            value={icp}
+            onChange={(e) => setIcp(e.target.value)}
+            className="mt-2 min-h-[80px] resize-none"
           />
         </div>
 

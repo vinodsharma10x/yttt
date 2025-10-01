@@ -12,9 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    const { videoDescription, selectedTitle, emotion } = await req.json();
+    const { videoDescription, selectedTitle, emotion, icp } = await req.json();
     
-    console.log('Generating thumbnail text with:', { videoDescription, selectedTitle, emotion });
+    console.log('Generating thumbnail text with:', { videoDescription, selectedTitle, emotion, icp });
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -56,10 +56,12 @@ Your response MUST be valid JSON in this exact format:
 
 Generate 3-4 thumbnail text + subtitle combinations optimized for visual impact.`;
 
+    const icpContext = icp ? `\nIdeal Customer Profile (Target Audience): ${icp}\n\nIMPORTANT: Tailor the text to resonate specifically with this target audience. Use language and triggers that appeal to them.` : '';
+
     const userPrompt = `Video Description: ${videoDescription}
 
 Selected Video Title: ${selectedTitle}
-Emotion: ${emotion}
+Emotion: ${emotion}${icpContext}
 
 Generate 3-4 thumbnail text + subtitle combinations that:
 1. Main text: 1-8 words, creates visual impact and curiosity
@@ -68,6 +70,7 @@ Generate 3-4 thumbnail text + subtitle combinations that:
 4. Are readable at small sizes on mobile
 5. Complement but DON'T repeat the video title
 6. Use power words and emotional triggers
+${icp ? '7. Resonate specifically with the target audience described in the ICP' : ''}
 
 Return ONLY valid JSON with the format specified.`;
 

@@ -12,9 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    const { videoDescription, targetKeyword, emotion } = await req.json();
+    const { videoDescription, targetKeyword, emotion, icp } = await req.json();
     
-    console.log('Generating titles with:', { videoDescription, targetKeyword, emotion });
+    console.log('Generating titles with:', { videoDescription, targetKeyword, emotion, icp });
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -45,16 +45,19 @@ Your response MUST be valid JSON in this exact format:
 
 Generate 5-6 title variations with engagement scores (1-100).`;
 
+    const icpContext = icp ? `\n\nIdeal Customer Profile (Target Audience): ${icp}\n\nIMPORTANT: Tailor the titles to resonate specifically with this target audience. Use language, references, and emotional triggers that appeal to them.` : '';
+
     const userPrompt = `Video Description: ${videoDescription}
 
 Target Keyword: ${targetKeyword}
-Emotion: ${emotion}
+Emotion: ${emotion}${icpContext}
 
 Generate 5-6 YouTube title options optimized for this content. Each title should:
 1. Include the target keyword naturally
 2. Match the ${emotion} emotion
 3. Be visually readable on a thumbnail
 4. Score high for click-through rate potential
+${icp ? '5. Resonate specifically with the target audience described in the ICP' : ''}
 
 Return ONLY valid JSON with the format specified.`;
 

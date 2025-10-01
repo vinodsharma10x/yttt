@@ -29,6 +29,7 @@ export const ThumbnailGenerator = () => {
   const [videoDescription, setVideoDescription] = useState("");
   const [selectedTitle, setSelectedTitle] = useState("");
   const [emotion, setEmotion] = useState("");
+  const [icp, setIcp] = useState("");
   const [generatedThumbnailTexts, setGeneratedThumbnailTexts] = useState<ThumbnailTextOption[]>([]);
   const [isGeneratingText, setIsGeneratingText] = useState(false);
 
@@ -194,10 +195,11 @@ export const ThumbnailGenerator = () => {
     drawThumbnail();
   }, [image, title, description, titleSize, descriptionSize]);
 
-  const handleTitleGenerated = (titleData: { title: string; videoDescription: string; emotion: string }) => {
+  const handleTitleGenerated = (titleData: { title: string; videoDescription: string; emotion: string; icp: string }) => {
     setSelectedTitle(titleData.title);
     setVideoDescription(titleData.videoDescription);
     setEmotion(titleData.emotion);
+    setIcp(titleData.icp);
     toast.success("Title selected! Switch to Thumbnail Design to generate text.");
   };
 
@@ -212,7 +214,7 @@ export const ThumbnailGenerator = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-thumbnail-text', {
-        body: { videoDescription, selectedTitle, emotion }
+        body: { videoDescription, selectedTitle, emotion, icp }
       });
 
       if (error) throw error;
