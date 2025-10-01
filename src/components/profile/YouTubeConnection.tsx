@@ -43,7 +43,10 @@ export function YouTubeConnection({ userId }: YouTubeConnectionProps) {
         }
 
         const { data, error } = await supabase.functions.invoke('youtube-complete-auth', {
-          body: { code, redirectUri }
+          body: { code, redirectUri },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
         });
 
         if (error) throw error;
@@ -122,7 +125,16 @@ export function YouTubeConnection({ userId }: YouTubeConnectionProps) {
   const handleSync = async () => {
     setSyncing(true);
     try {
-      const { error } = await supabase.functions.invoke('youtube-sync');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No active session. Please sign in again.');
+      }
+
+      const { error } = await supabase.functions.invoke('youtube-sync', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
       
       if (error) throw error;
 
@@ -135,7 +147,7 @@ export function YouTubeConnection({ userId }: YouTubeConnectionProps) {
     } catch (error: any) {
       toast({
         title: "Sync failed",
-        description: error.message,
+        description: error.message || "Please try again",
         variant: "destructive",
       });
     } finally {
