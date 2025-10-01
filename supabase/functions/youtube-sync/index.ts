@@ -16,6 +16,7 @@ serve(async (req) => {
     if (!authHeader) {
       throw new Error('No authorization header');
     }
+    const jwt = authHeader.replace('Bearer ', '').trim();
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -23,7 +24,7 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(jwt);
     if (userError || !user) {
       throw new Error('Unauthorized');
     }

@@ -18,8 +18,8 @@ export function YouTubeConnection({ userId }: YouTubeConnectionProps) {
 
   useEffect(() => {
     const init = async () => {
-      await checkConnection();
       await handleOAuthCallback();
+      await checkConnection();
     };
     init();
   }, [userId]);
@@ -36,10 +36,16 @@ export function YouTubeConnection({ userId }: YouTubeConnectionProps) {
       sessionStorage.removeItem('youtube_redirect_uri');
 
       try {
-        // Ensure we have a valid session
-        const { data: { session } } = await supabase.auth.getSession();
+        // Ensure we have a valid session (retry up to 3s after redirect)
+        let session: any = null;
+        const start = Date.now();
+        while (!session && Date.now() - start < 3000) {
+          const res = await supabase.auth.getSession();
+          session = res.data.session;
+          if (!session) await new Promise((r) => setTimeout(r, 200));
+        }
         if (!session) {
-          throw new Error('No active session. Please sign in again.');
+          throw new Error('Session not ready. Please refresh and try again.');
         }
 
         const { data, error } = await supabase.functions.invoke('youtube-complete-auth', {
