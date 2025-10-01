@@ -17,8 +17,11 @@ export function YouTubeConnection({ userId }: YouTubeConnectionProps) {
   const { toast } = useToast();
 
   useEffect(() => {
-    checkConnection();
-    handleOAuthCallback();
+    const init = async () => {
+      await checkConnection();
+      await handleOAuthCallback();
+    };
+    init();
   }, [userId]);
 
   const handleOAuthCallback = async () => {
@@ -33,6 +36,12 @@ export function YouTubeConnection({ userId }: YouTubeConnectionProps) {
       sessionStorage.removeItem('youtube_redirect_uri');
 
       try {
+        // Ensure we have a valid session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          throw new Error('No active session. Please sign in again.');
+        }
+
         const { data, error } = await supabase.functions.invoke('youtube-complete-auth', {
           body: { code, redirectUri }
         });
@@ -49,9 +58,10 @@ export function YouTubeConnection({ userId }: YouTubeConnectionProps) {
         
         await checkConnection();
       } catch (error: any) {
+        console.error('YouTube connection error:', error);
         toast({
           title: "Connection failed",
-          description: error.message,
+          description: error.message || "Please try again",
           variant: "destructive",
         });
       } finally {
