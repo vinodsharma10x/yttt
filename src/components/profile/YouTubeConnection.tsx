@@ -63,7 +63,7 @@ export function YouTubeConnection({ userId }: YouTubeConnectionProps) {
         });
 
         // Clean up URL
-        window.history.replaceState({}, document.title, '/profile');
+        window.history.replaceState({}, document.title, '/dashboard');
         
         await checkConnection();
       } catch (error: any) {
@@ -103,7 +103,7 @@ export function YouTubeConnection({ userId }: YouTubeConnectionProps) {
   const handleConnect = async () => {
     setLoading(true);
     try {
-      const redirectUri = `${window.location.origin}/profile`;
+      const redirectUri = `${window.location.origin}/dashboard`;
       
       // Get auth URL from backend
       const { data, error } = await supabase.functions.invoke('youtube-get-auth-url', {
