@@ -174,6 +174,102 @@ export type Database = {
         }
         Relationships: []
       }
+      youtube_connections: {
+        Row: {
+          access_token: string
+          channel_id: string
+          channel_title: string | null
+          created_at: string
+          id: string
+          last_synced_at: string | null
+          refresh_token: string
+          subscriber_count: number | null
+          token_expires_at: string
+          updated_at: string
+          user_id: string
+          video_count: number | null
+          view_count: number | null
+        }
+        Insert: {
+          access_token: string
+          channel_id: string
+          channel_title?: string | null
+          created_at?: string
+          id?: string
+          last_synced_at?: string | null
+          refresh_token: string
+          subscriber_count?: number | null
+          token_expires_at: string
+          updated_at?: string
+          user_id: string
+          video_count?: number | null
+          view_count?: number | null
+        }
+        Update: {
+          access_token?: string
+          channel_id?: string
+          channel_title?: string | null
+          created_at?: string
+          id?: string
+          last_synced_at?: string | null
+          refresh_token?: string
+          subscriber_count?: number | null
+          token_expires_at?: string
+          updated_at?: string
+          user_id?: string
+          video_count?: number | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
+      youtube_videos: {
+        Row: {
+          comment_count: number | null
+          created_at: string
+          description: string | null
+          duration: string | null
+          id: string
+          like_count: number | null
+          published_at: string | null
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+          user_id: string
+          video_id: string
+          view_count: number | null
+        }
+        Insert: {
+          comment_count?: number | null
+          created_at?: string
+          description?: string | null
+          duration?: string | null
+          id?: string
+          like_count?: number | null
+          published_at?: string | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          user_id: string
+          video_id: string
+          view_count?: number | null
+        }
+        Update: {
+          comment_count?: number | null
+          created_at?: string
+          description?: string | null
+          duration?: string | null
+          id?: string
+          like_count?: number | null
+          published_at?: string | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          user_id?: string
+          video_id?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
