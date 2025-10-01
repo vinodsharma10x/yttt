@@ -107,13 +107,23 @@ export const TitleGenerator = ({ onSelectTitle }: TitleGeneratorProps) => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="excited">Excited</SelectItem>
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="comparison">Comparison</SelectItem>
+                <SelectItem value="credibility">Credibility</SelectItem>
                 <SelectItem value="curious">Curious</SelectItem>
-                <SelectItem value="urgent">Urgent</SelectItem>
-                <SelectItem value="inspirational">Inspirational</SelectItem>
-                <SelectItem value="shocking">Shocking</SelectItem>
+                <SelectItem value="curiosity">Curiosity</SelectItem>
+                <SelectItem value="desire">Desire</SelectItem>
                 <SelectItem value="educational">Educational</SelectItem>
                 <SelectItem value="entertaining">Entertaining</SelectItem>
+                <SelectItem value="excited">Excited</SelectItem>
+                <SelectItem value="extreme">Extreme</SelectItem>
+                <SelectItem value="inspirational">Inspirational</SelectItem>
+                <SelectItem value="list">List</SelectItem>
+                <SelectItem value="negativity">Negativity</SelectItem>
+                <SelectItem value="question">Question</SelectItem>
+                <SelectItem value="shocking">Shocking</SelectItem>
+                <SelectItem value="time">Time</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
               </SelectContent>
             </Select>
           </div>
