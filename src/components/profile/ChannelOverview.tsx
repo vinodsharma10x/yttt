@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { YouTubeConnection } from "./YouTubeConnection";
 
 interface ChannelOverviewProps {
   userId: string;
@@ -88,14 +89,17 @@ export const ChannelOverview = ({ userId }: ChannelOverviewProps) => {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Channel Overview</CardTitle>
-        <CardDescription>
-          Basic information about your YouTube channel
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="space-y-6">
+      <YouTubeConnection userId={userId} />
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Channel Overview</CardTitle>
+          <CardDescription>
+            Basic information about your YouTube channel
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="channel-name">Channel Name</Label>
           <Input
@@ -154,5 +158,6 @@ export const ChannelOverview = ({ userId }: ChannelOverviewProps) => {
         </Button>
       </CardContent>
     </Card>
+    </div>
   );
 };

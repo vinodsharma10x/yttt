@@ -5,3 +5,12 @@ verify_jwt = false
 
 [functions.generate-thumbnail-text]
 verify_jwt = false
+
+[functions.youtube-get-auth-url]
+verify_jwt = false
+
+[functions.youtube-complete-auth]
+verify_jwt = true
+
+[functions.youtube-sync]
+verify_jwt = true
