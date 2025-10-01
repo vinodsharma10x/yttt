@@ -14,7 +14,166 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      audience_profiles: {
+        Row: {
+          age_range: string | null
+          buying_patterns: string | null
+          content_consumption_habits: string | null
+          created_at: string
+          current_state: string | null
+          desired_state: string | null
+          goals: string[] | null
+          id: string
+          income_level: string | null
+          is_primary: boolean | null
+          location: string | null
+          pain_points: string[] | null
+          preferred_platforms: string[] | null
+          profession: string | null
+          profile_name: string
+          proof_points: string[] | null
+          solution_approach: string | null
+          time_availability: string | null
+          unique_angle: string | null
+          updated_at: string
+          user_id: string
+          value_proposition: string | null
+          values: string[] | null
+        }
+        Insert: {
+          age_range?: string | null
+          buying_patterns?: string | null
+          content_consumption_habits?: string | null
+          created_at?: string
+          current_state?: string | null
+          desired_state?: string | null
+          goals?: string[] | null
+          id?: string
+          income_level?: string | null
+          is_primary?: boolean | null
+          location?: string | null
+          pain_points?: string[] | null
+          preferred_platforms?: string[] | null
+          profession?: string | null
+          profile_name: string
+          proof_points?: string[] | null
+          solution_approach?: string | null
+          time_availability?: string | null
+          unique_angle?: string | null
+          updated_at?: string
+          user_id: string
+          value_proposition?: string | null
+          values?: string[] | null
+        }
+        Update: {
+          age_range?: string | null
+          buying_patterns?: string | null
+          content_consumption_habits?: string | null
+          created_at?: string
+          current_state?: string | null
+          desired_state?: string | null
+          goals?: string[] | null
+          id?: string
+          income_level?: string | null
+          is_primary?: boolean | null
+          location?: string | null
+          pain_points?: string[] | null
+          preferred_platforms?: string[] | null
+          profession?: string | null
+          profile_name?: string
+          proof_points?: string[] | null
+          solution_approach?: string | null
+          time_availability?: string | null
+          unique_angle?: string | null
+          updated_at?: string
+          user_id?: string
+          value_proposition?: string | null
+          values?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audience_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      channel_settings: {
+        Row: {
+          created_at: string
+          id: string
+          performance_goals: Json | null
+          publishing_frequency: string | null
+          target_video_length: string | null
+          updated_at: string
+          user_id: string
+          video_formats: string[] | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          performance_goals?: Json | null
+          publishing_frequency?: string | null
+          target_video_length?: string | null
+          updated_at?: string
+          user_id: string
+          video_formats?: string[] | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          performance_goals?: Json | null
+          publishing_frequency?: string | null
+          target_video_length?: string | null
+          updated_at?: string
+          user_id?: string
+          video_formats?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          brand_voice: string | null
+          channel_name: string | null
+          channel_niche: string | null
+          content_pillars: string[] | null
+          created_at: string
+          id: string
+          updated_at: string
+          upload_schedule: string | null
+        }
+        Insert: {
+          brand_voice?: string | null
+          channel_name?: string | null
+          channel_niche?: string | null
+          content_pillars?: string[] | null
+          created_at?: string
+          id: string
+          updated_at?: string
+          upload_schedule?: string | null
+        }
+        Update: {
+          brand_voice?: string | null
+          channel_name?: string | null
+          channel_niche?: string | null
+          content_pillars?: string[] | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          upload_schedule?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

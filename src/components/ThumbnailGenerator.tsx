@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { Upload, Download, Sparkles } from "lucide-react";
+import { Upload, Download, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -17,6 +18,8 @@ interface ThumbnailTextOption {
 }
 
 export const ThumbnailGenerator = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
   const [image, setImage] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -32,6 +35,29 @@ export const ThumbnailGenerator = () => {
   const [icp, setIcp] = useState("");
   const [generatedThumbnailTexts, setGeneratedThumbnailTexts] = useState<ThumbnailTextOption[]>([]);
   const [isGeneratingText, setIsGeneratingText] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+      setUser(session.user);
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate("/auth");
+      } else {
+        setUser(session.user);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -240,9 +266,24 @@ export const ThumbnailGenerator = () => {
     toast.success("Thumbnail text applied!");
   };
 
+  if (!user) {
+    return null; // Will redirect to auth
+  }
+
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
+        <div className="flex justify-end mb-6">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/profile")}
+            className="gap-2"
+          >
+            <User className="h-4 w-4" />
+            Profile
+          </Button>
+        </div>
+
         <div className="text-center mb-12">
           <h1 className="text-6xl font-black mb-4 bg-gradient-primary bg-clip-text text-transparent">
             YouTube Thumbnail & Title Generator

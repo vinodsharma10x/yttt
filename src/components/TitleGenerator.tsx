@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TitleOption {
   title: string;
@@ -25,6 +26,47 @@ export const TitleGenerator = ({ onSelectTitle }: TitleGeneratorProps) => {
   const [icp, setIcp] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedTitles, setGeneratedTitles] = useState<TitleOption[]>([]);
+
+  useEffect(() => {
+    // Load user's primary ICP on component mount
+    const loadPrimaryICP = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: audienceProfiles } = await supabase
+          .from("audience_profiles")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("is_primary", true)
+          .maybeSingle();
+
+        if (audienceProfiles) {
+          // Build a formatted ICP string from the primary profile
+          const icpText = buildICPText(audienceProfiles);
+          setIcp(icpText);
+        }
+      } catch (error) {
+        console.error("Failed to load primary ICP:", error);
+      }
+    };
+
+    loadPrimaryICP();
+  }, []);
+
+  const buildICPText = (profile: any): string => {
+    const parts = [];
+    
+    if (profile.current_state) parts.push(`Current state: ${profile.current_state}`);
+    if (profile.desired_state) parts.push(`Desired state: ${profile.desired_state}`);
+    if (profile.age_range) parts.push(`Age: ${profile.age_range}`);
+    if (profile.profession) parts.push(`Profession: ${profile.profession}`);
+    if (profile.pain_points?.length) parts.push(`Pain points: ${profile.pain_points.join(", ")}`);
+    if (profile.goals?.length) parts.push(`Goals: ${profile.goals.join(", ")}`);
+    if (profile.unique_angle) parts.push(`Your unique angle: ${profile.unique_angle}`);
+    
+    return parts.join(". ");
+  };
 
   const generateTitles = async () => {
     if (!videoDescription.trim()) {
