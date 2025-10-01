@@ -132,19 +132,6 @@ export const TitleGenerator = ({ onSelectTitle }: TitleGeneratorProps) => {
           />
         </div>
 
-        <div>
-          <Label htmlFor="icp" className="text-base font-semibold">
-            Ideal Customer Profile (ICP)
-          </Label>
-          <Textarea
-            id="icp"
-            placeholder="Describe your target audience (e.g., 'Tech-savvy millennials interested in home cooking, ages 25-35, looking for quick and easy recipes')"
-            value={icp}
-            onChange={(e) => setIcp(e.target.value)}
-            className="mt-2 min-h-[80px] resize-none"
-          />
-        </div>
-
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <Label htmlFor="target-keyword">Target Keyword</Label>
