@@ -1,40 +1,36 @@
 import { useState, useRef, useEffect } from "react";
-import { Upload, Download, Sparkles, User } from "lucide-react";
+import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TitleGenerator } from "@/components/TitleGenerator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-
-interface ThumbnailTextOption {
-  mainText: string;
-  subtitle: string;
-  reason: string;
-}
+import { StepIndicator } from "@/components/thumbnail/StepIndicator";
+import { YouTubePreview } from "@/components/thumbnail/YouTubePreview";
+import { VideoDetailsStep } from "@/components/thumbnail/VideoDetailsStep";
+import { ThumbnailTextStep } from "@/components/thumbnail/ThumbnailTextStep";
+import { BackgroundDesignStep } from "@/components/thumbnail/BackgroundDesignStep";
 
 export const ThumbnailGenerator = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
+  const [currentStep, setCurrentStep] = useState(1);
   const [image, setImage] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [titleSize, setTitleSize] = useState(72);
   const [descriptionSize, setDescriptionSize] = useState(36);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [channelName, setChannelName] = useState("Your Channel");
 
-  // State for thumbnail text generation
-  const [videoDescription, setVideoDescription] = useState("");
+  // Step 1 data
   const [selectedTitle, setSelectedTitle] = useState("");
+  const [videoDescription, setVideoDescription] = useState("");
   const [emotion, setEmotion] = useState("");
   const [icp, setIcp] = useState("");
-  const [generatedThumbnailTexts, setGeneratedThumbnailTexts] = useState<ThumbnailTextOption[]>([]);
-  const [isGeneratingText, setIsGeneratingText] = useState(false);
+  const [channelNiche, setChannelNiche] = useState("");
+  const [brandVoice, setBrandVoice] = useState("");
+  const [contentPillars, setContentPillars] = useState<string[]>([]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -44,6 +40,17 @@ export const ThumbnailGenerator = () => {
         return;
       }
       setUser(session.user);
+
+      // Load channel name
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("channel_name")
+        .eq("id", session.user.id)
+        .maybeSingle();
+
+      if (profile?.channel_name) {
+        setChannelName(profile.channel_name);
+      }
     };
 
     checkAuth();
@@ -59,18 +66,6 @@ export const ThumbnailGenerator = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setImage(event.target?.result as string);
-        toast.success("Image uploaded successfully!");
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const drawThumbnail = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -78,14 +73,11 @@ export const ThumbnailGenerator = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Set canvas size to YouTube thumbnail dimensions (1280x720)
     canvas.width = 1280;
     canvas.height = 720;
 
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw background image if available
     if (image) {
       const img = new Image();
       img.onload = () => {
@@ -94,7 +86,6 @@ export const ThumbnailGenerator = () => {
       };
       img.src = image;
     } else {
-      // Draw gradient background if no image
       const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
       gradient.addColorStop(0, "#FF0000");
       gradient.addColorStop(1, "#FF6B00");
@@ -111,13 +102,11 @@ export const ThumbnailGenerator = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Add semi-transparent overlay for better text readability
     if (title || description) {
       ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // Draw title with background
     if (title) {
       ctx.font = `bold ${titleSize}px Arial, sans-serif`;
       ctx.textAlign = "center";
@@ -128,7 +117,6 @@ export const ThumbnailGenerator = () => {
       const textWidth = textMetrics.width;
       const textHeight = titleSize;
       
-      // Draw background rectangle with rounded corners
       const padding = 30;
       const rectX = canvas.width / 2 - textWidth / 2 - padding;
       const rectY = titleY - textHeight / 2 - padding / 2;
@@ -150,7 +138,6 @@ export const ThumbnailGenerator = () => {
       ctx.closePath();
       ctx.fill();
 
-      // Draw title text
       ctx.fillStyle = "#FFFFFF";
       ctx.strokeStyle = "#000000";
       ctx.lineWidth = 4;
@@ -158,7 +145,6 @@ export const ThumbnailGenerator = () => {
       ctx.fillText(title, canvas.width / 2, titleY);
     }
 
-    // Draw subtitle with background
     if (description) {
       ctx.font = `${descriptionSize}px Arial, sans-serif`;
       ctx.textAlign = "center";
@@ -169,7 +155,6 @@ export const ThumbnailGenerator = () => {
       const textWidth = textMetrics.width;
       const textHeight = descriptionSize;
       
-      // Draw background rectangle with rounded corners
       const padding = 20;
       const rectX = canvas.width / 2 - textWidth / 2 - padding;
       const rectY = descY - textHeight / 2 - padding / 2;
@@ -191,7 +176,6 @@ export const ThumbnailGenerator = () => {
       ctx.closePath();
       ctx.fill();
 
-      // Draw subtitle text
       ctx.fillStyle = "#000000";
       ctx.strokeStyle = "#FFFFFF";
       ctx.lineWidth = 2;
@@ -221,53 +205,35 @@ export const ThumbnailGenerator = () => {
     drawThumbnail();
   }, [image, title, description, titleSize, descriptionSize]);
 
-  const handleTitleGenerated = (titleData: { title: string; videoDescription: string; emotion: string; icp: string }) => {
-    setSelectedTitle(titleData.title);
-    setVideoDescription(titleData.videoDescription);
-    setEmotion(titleData.emotion);
-    setIcp(titleData.icp);
-    toast.success("Title selected! Switch to Thumbnail Design to generate text.");
+  const handleStep1Complete = (data: {
+    title: string;
+    videoDescription: string;
+    emotion: string;
+    icp: string;
+    channelNiche: string;
+    brandVoice: string;
+    contentPillars: string[];
+  }) => {
+    setSelectedTitle(data.title);
+    setVideoDescription(data.videoDescription);
+    setEmotion(data.emotion);
+    setIcp(data.icp);
+    setChannelNiche(data.channelNiche);
+    setBrandVoice(data.brandVoice);
+    setContentPillars(data.contentPillars);
+    setCurrentStep(2);
+    toast.success("Moving to thumbnail text generation");
   };
 
-  const generateThumbnailText = async () => {
-    if (!videoDescription || !selectedTitle || !emotion) {
-      toast.error("Please generate and select a title first");
-      return;
-    }
-
-    setIsGeneratingText(true);
-    setGeneratedThumbnailTexts([]);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-thumbnail-text', {
-        body: { videoDescription, selectedTitle, emotion, icp }
-      });
-
-      if (error) throw error;
-
-      if (data.error) {
-        toast.error(data.error);
-        return;
-      }
-
-      setGeneratedThumbnailTexts(data.thumbnailOptions || []);
-      toast.success("Thumbnail text generated!");
-    } catch (error) {
-      console.error('Error generating thumbnail text:', error);
-      toast.error("Failed to generate thumbnail text");
-    } finally {
-      setIsGeneratingText(false);
-    }
-  };
-
-  const handleSelectThumbnailText = (mainText: string, subtitle: string) => {
+  const handleStep2Complete = (mainText: string, subtitle: string) => {
     setTitle(mainText);
     setDescription(subtitle);
-    toast.success("Thumbnail text applied!");
+    setCurrentStep(3);
+    toast.success("Moving to background design");
   };
 
   if (!user) {
-    return null; // Will redirect to auth
+    return null;
   }
 
   return (
@@ -276,11 +242,11 @@ export const ThumbnailGenerator = () => {
         <div className="flex justify-end mb-6">
           <Button
             variant="outline"
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate("/dashboard")}
             className="gap-2"
           >
             <User className="h-4 w-4" />
-            Profile
+            Dashboard
           </Button>
         </div>
 
@@ -293,167 +259,45 @@ export const ThumbnailGenerator = () => {
           </p>
         </div>
 
+        <StepIndicator currentStep={currentStep} totalSteps={3} />
+
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Controls Panel */}
           <Card className="p-6 bg-gradient-card border-border shadow-elevation">
-            <Tabs defaultValue="title" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="title">AI Title Generator</TabsTrigger>
-                <TabsTrigger value="thumbnail">Thumbnail Design</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="title" className="space-y-6">
-                <TitleGenerator onSelectTitle={handleTitleGenerated} />
-              </TabsContent>
-
-              <TabsContent value="thumbnail" className="space-y-6">
-                {/* AI Thumbnail Text Generator */}
-                <div className="space-y-4 pb-6 border-b border-border">
-                  <div>
-                    <Label className="text-lg font-bold mb-2 block">AI Thumbnail Text</Label>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Generate short, powerful text for your thumbnail overlay
-                    </p>
-                    <Button
-                      onClick={generateThumbnailText}
-                      disabled={isGeneratingText || !selectedTitle}
-                      className="w-full"
-                      variant="outline"
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      {isGeneratingText ? "Generating..." : "Generate Thumbnail Text"}
-                    </Button>
-                  </div>
-
-                  {generatedThumbnailTexts.length > 0 && (
-                    <div className="space-y-2">
-                      <Label className="text-sm font-semibold">Select Thumbnail Text:</Label>
-                      {generatedThumbnailTexts.map((option, index) => (
-                        <Card
-                          key={index}
-                          className="p-4 cursor-pointer hover:border-primary transition-colors"
-                          onClick={() => handleSelectThumbnailText(option.mainText, option.subtitle)}
-                        >
-                          <div className="space-y-2">
-                            <p className="font-bold text-lg">{option.mainText}</p>
-                            {option.subtitle && (
-                              <p className="font-semibold text-base text-yellow-600">{option.subtitle}</p>
-                            )}
-                            <p className="text-sm text-muted-foreground">{option.reason}</p>
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-
-                  {!selectedTitle && (
-                    <p className="text-sm text-muted-foreground italic">
-                      Generate a title first to unlock AI thumbnail text
-                    </p>
-                  )}
-                </div>
-
-            <div>
-              <Label htmlFor="image-upload" className="text-lg font-bold mb-3 block">
-                Background Image
-              </Label>
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
-              >
-                <input
-                  ref={fileInputRef}
-                  id="image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-                <Upload className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-                <p className="text-muted-foreground">
-                  Click to upload or drag and drop
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  PNG, JPG up to 10MB
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="title" className="text-lg font-bold mb-3 block">
-                Main Text
-              </Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter your catchy title..."
-                className="text-lg h-12"
+            {currentStep === 1 && (
+              <VideoDetailsStep onComplete={handleStep1Complete} />
+            )}
+            {currentStep === 2 && (
+              <ThumbnailTextStep
+                selectedTitle={selectedTitle}
+                videoDescription={videoDescription}
+                emotion={emotion}
+                icp={icp}
+                channelNiche={channelNiche}
+                brandVoice={brandVoice}
+                onComplete={handleStep2Complete}
               />
-              <div className="mt-3">
-                <Label className="text-sm text-muted-foreground">Title Size: {titleSize}px</Label>
-                <Slider
-                  value={[titleSize]}
-                  onValueChange={(value) => setTitleSize(value[0])}
-                  min={40}
-                  max={120}
-                  step={4}
-                  className="mt-2"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="description" className="text-lg font-bold mb-3 block">
-                Subtitle
-              </Label>
-              <Input
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Add a subtitle..."
-                className="text-lg h-12"
+            )}
+            {currentStep === 3 && (
+              <BackgroundDesignStep
+                onImageUpload={setImage}
+                titleSize={titleSize}
+                setTitleSize={setTitleSize}
+                descriptionSize={descriptionSize}
+                setDescriptionSize={setDescriptionSize}
+                onDownload={downloadThumbnail}
               />
-              <div className="mt-3">
-                <Label className="text-sm text-muted-foreground">
-                  Subtitle Size: {descriptionSize}px
-                </Label>
-                <Slider
-                  value={[descriptionSize]}
-                  onValueChange={(value) => setDescriptionSize(value[0])}
-                  min={20}
-                  max={60}
-                  step={2}
-                  className="mt-2"
-                />
-              </div>
-            </div>
-
-                <Button
-                  onClick={downloadThumbnail}
-                  className="w-full h-14 text-lg font-bold bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
-                >
-                  <Download className="w-5 h-5 mr-2" />
-                  Download Thumbnail
-                </Button>
-              </TabsContent>
-            </Tabs>
+            )}
           </Card>
 
-          {/* Preview Panel */}
-          <Card className="p-6 bg-gradient-card border-border shadow-elevation">
-            <Label className="text-lg font-bold mb-4 block">Preview (1280x720)</Label>
-            <div className="aspect-video bg-muted rounded-lg overflow-hidden shadow-lg">
-              <canvas
-                ref={canvasRef}
-                className="w-full h-full"
-              />
-            </div>
-            <p className="text-sm text-muted-foreground mt-4 text-center">
-              Your thumbnail will be optimized for YouTube's 16:9 format
-            </p>
-          </Card>
+          <YouTubePreview 
+            canvasRef={canvasRef} 
+            title={selectedTitle}
+            channelName={channelName}
+          />
         </div>
+
+        {/* Hidden canvas for actual thumbnail generation */}
+        <canvas ref={canvasRef} className="hidden" />
       </div>
     </div>
   );
